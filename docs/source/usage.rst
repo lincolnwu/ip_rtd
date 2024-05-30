@@ -38,3 +38,4 @@ Testing new google docstring for module level functions
 Testing class functions
 
 .. autoclass:: immunopheno.data_processing.ImmunoPhenoData
+    :members:
