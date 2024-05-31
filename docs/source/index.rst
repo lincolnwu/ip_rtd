@@ -22,3 +22,9 @@ Contents
 
    usage
    api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: TUTORIALS
+
+   docs/notebooks/titration_example
