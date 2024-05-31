@@ -8,6 +8,26 @@ class PlotUMAPError(ImmunoPhenoError):
     """No normalized counts are found when plotting a normalized UMAP"""
 
 class ImmunoPhenoData:
+    """A class to hold single-cell data (CITE-Seq, etc) and cytometry data.
+    
+    Performs fitting of gaussian/negative binomial mixture models and
+    normalization to antibodies present in a protein dataset. 
+
+    Args:
+        protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count matrix
+            Where: Row index (cells) x column (antibodies)
+        gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix
+            Where: Row index (cells) x column (genes)
+        cell_labels (str | pd.DataFrame): file path or dataframe
+            Where: Row index (cells) x column (cell type such as Cell Ontology ID)
+        spreadsheet (str): name of csv file containing a spreadsheet with
+            information about the experiment and antibodies. Used for uploading to a database
+        scanpy (anndata.AnnData): scanpy anndata object used to load in protein and gene data
+        scanpy_labels (str): name of the field inside a scanpy object with the cell labels
+            Where: scanpy is an AnnData object containing an 'obs' field
+                Ex: AnnData.obs['scanpy_labels']
+    """
+                
     def __init__(self,
                  protein_matrix: str | pd.DataFrame = None,
                  gene_matrix: str | pd.DataFrame = None,
