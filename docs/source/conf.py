@@ -1,4 +1,6 @@
 # Configuration file for the Sphinx documentation builder.
+import os
+import sys
 
 # -- Project information
 
@@ -10,6 +12,7 @@ release = '0.1'
 version = '0.1.0'
 
 # -- General configuration
+sys.path.insert(0, os.path.abspath('..'))
 
 extensions = [
     'sphinx.ext.duration',
