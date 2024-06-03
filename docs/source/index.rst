@@ -27,9 +27,4 @@ Contents
 .. toctree::
    :maxdepth: 1
    :caption: TUTORIALS
-
    notebooks/titration_example
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Usage
