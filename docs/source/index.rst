@@ -23,8 +23,3 @@ Contents
    :caption: Overview and Walkthrough
    usage
    api
-
-.. toctree::
-   :maxdepth: 1
-   :caption: TUTORIALS
-   notebooks/titration_example
