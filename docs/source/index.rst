@@ -21,6 +21,12 @@ Contents
 .. toctree::
    :maxdepth: 2
    :caption: Overview and Walkthrough
-   
+
    usage
    api
+
+.. toctree::
+    :maxdepth: 1
+    :caption: TUTORIALS
+
+    docs/notebooks/titration_example
