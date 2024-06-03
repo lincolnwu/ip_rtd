@@ -14,17 +14,18 @@ class ImmunoPhenoData:
     normalization to antibodies present in a protein dataset. 
 
     Args:
-        protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count matrix
-            Where: Row index (cells) x column (antibodies)
-        gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix
-            Where: Row index (cells) x column (genes)
-        cell_labels (str | pd.DataFrame): file path or dataframe
-            Where: Row index (cells) x column (cell type such as Cell Ontology ID)
+        protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count matrix. 
+            Format: Row (cells) x column (proteins/antibodies).
+        gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix.
+            Format: Row (cells) x column (genes).
+        cell_labels (str | pd.DataFrame): file path or dataframe to cell type labels. 
+            Format: Row (cells) x column (cell type such as Cell Ontology ID). The column
+            name should be called "labels". 
         spreadsheet (str): name of csv file containing a spreadsheet with
-            information about the experiment and antibodies. Used for uploading to a database
-        scanpy (anndata.AnnData): scanpy anndata object used to load in protein and gene data
-        scanpy_labels (str): name of the field inside a scanpy object with the cell labels
-            Where: scanpy is an AnnData object containing an 'obs' field
+            information about the experiment and antibodies. Used for uploading data to a database.
+        scanpy (anndata.AnnData): Scanpy AnnData object used to load in protein and gene data.
+        scanpy_labels (str): name of the field inside a scanpy object containing the cell labels.
+            Format: scanpy is an AnnData object containing an 'obs' field
                 Ex: AnnData.obs['scanpy_labels']
     """
 
@@ -146,8 +147,7 @@ class ImmunoPhenoData:
                 all dataframes of the object. 
 
         Returns:
-            ImmunoPhenoData: new instance containing modified dataframes such as
-                protein, RNA, labels, etc.
+            ImmunoPhenoData: contains modified dataframes based on provided rows/cells names
         """
         if isinstance(index, list):
             index = pd.Index(index)
