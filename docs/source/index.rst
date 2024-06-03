@@ -27,4 +27,4 @@ Contents
    :maxdepth: 1
    :caption: TUTORIALS
 
-   titration_example
+   notebooks/titration_example
