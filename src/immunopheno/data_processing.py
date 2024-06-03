@@ -287,9 +287,8 @@ class ImmunoPhenoData:
         follow the cell ontology format of CL:XXXXXXX or CL_XXXXXXX,
         where an "X" is a numeric value.
 
-        Raises:
-            Exception: The object does not contain cell labels 
-            Exception: The cell labels dataframe does not contain a "labels" column
+        Returns:
+            None. Modifies the cell labels dataframe in-place.
         """
         # First, check that the raw cell types table exists
         if self._cell_labels is not None and isinstance(self._cell_labels, pd.DataFrame):
@@ -333,9 +332,8 @@ class ImmunoPhenoData:
         Args:
             antibody (str): name of antibody to be removed
 
-        Raises:
-            AntibodyLookupError: The antibody is not found in the protein data
-            AntibodyLookupError: The provided antibody is not a string
+        Returns:
+            None. Modifies the protein and fits data in-place.
         """
         # CHECK: Does this antibody exist in the protein data?
         if isinstance(antibody, str):
@@ -376,14 +374,6 @@ class ImmunoPhenoData:
             model (str): type of model to fit. "gaussian" or "nb"
             plot (bool): option to plot each model
             **kwargs: initial arguments for sklearn's GaussianMixture (optional)
-
-        Raises:
-            InvalidModelError: The provided model is neither "gaussian" nor "nb".
-            ExtraArgumentsError: Additional kwargs can only be provided for "gaussian".
-            TransformTypeError: The transform type is neither "log" nor "arcsinh".
-            PlotAntibodyFitError: Plot must be a boolean value.
-            AntibodyLookupError: The provided antibody name is not found in the protein data.
-            TransformTypeError: A transform scale cannot be provided without a transform type.
 
         Returns:
             dict: results from optimization as either gauss_params/nb_params.
