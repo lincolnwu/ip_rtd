@@ -22,11 +22,17 @@ Contents
    :maxdepth: 2
    :caption: Overview and Walkthrough
 
-   usage
-   api
+   what-is-immunopheno
 
 .. toctree::
-    :maxdepth: 1
-    :caption: TUTORIALS
+   :maxdepth: 1
+   :caption: TUTORIALS
 
-    docs/notebooks/titration_example
+   ../notebooks/titration_example
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API
+
+   usage
+   api
