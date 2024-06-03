@@ -23,8 +23,8 @@ class ImmunoPhenoData:
             name should be called "labels". 
         spreadsheet (str): name of csv file containing a spreadsheet with
             information about the experiment and antibodies. Used for uploading data to a database.
-        scanpy (anndata.AnnData): Scanpy AnnData object used to load in protein and gene data.
-        scanpy_labels (str): name of the field inside a scanpy object containing the cell labels.
+        scanpy (anndata.AnnData): scanpy AnnData object used to load in protein and gene data.
+        scanpy_labels (str): location of cell labels inside a scanpy object. 
             Format: scanpy is an AnnData object containing an 'obs' field
                 Ex: AnnData.obs['scanpy_labels']
     """
@@ -279,4 +279,204 @@ class ImmunoPhenoData:
             None. Modifies the protein dataset in-place.
         """
         self._protein_matrix = self._temp_protein + arg1 - arg2
+
+    def convert_labels(self) -> None:
+        """Convert all cell ontology IDs to a common name.
+
+        Requires all values in the "labels" column of the cell labels dataframe to
+        follow the cell ontology format of CL:XXXXXXX or CL_XXXXXXX,
+        where an "X" is a numeric value.
+
+        Raises:
+            Exception: The object does not contain cell labels 
+            Exception: The cell labels dataframe does not contain a "labels" column
+        """
+        # First, check that the raw cell types table exists
+        if self._cell_labels is not None and isinstance(self._cell_labels, pd.DataFrame):
+            # Check if the "labels" column exists
+            if "labels" in self._cell_labels:
+                # Create mapping dictionary using values in the "labels" field
+                labels_map = _ebi_idCL_map(self._cell_labels)
+
+                # Map all values from dictionary back onto the "celltype" field
+                temp_df = self._cell_labels.copy(deep=True)
+                temp_df['celltype'] = temp_df['labels'].map(labels_map)
+
+                # Ensure all "labels" follow the format of "CL:XXXXXXX"
+                temp_df["labels"] = temp_df["labels"].str.replace(r'^CL_([0-9]+)$', r'CL:\1')
+                
+                # Set new table
+                self._cell_labels = temp_df
+
+                # Check if normalized cell types exist. If so, repeat above
+                if self.labels is not None and isinstance(self.labels, pd.DataFrame):
+                    norm_temp_df = self.labels.copy(deep=True)
+                    norm_temp_df['celltype'] = norm_temp_df['labels'].map(labels_map)
+
+                    # Ensure all "labels" follow the format of "CL:XXXXXXX"
+                    norm_temp_df["labels"] = norm_temp_df["labels"].str.replace(r'^CL_([0-9]+)$', r'CL:\1')
+
+                    # Set new table
+                    self._cell_labels_filt_df = norm_temp_df
+            else:
+                raise Exception("Table does not contain 'labels' column")
+        else:
+            raise Exception("No cell labels found. Please provide a table with a 'labels' column.")
+
+    def remove_antibody(self, antibody: str) -> None:
+        """Removes an antibody from the protein data and mixture model fits
+
+        Removes all values for an antibody from the protein dataframe in-place. If
+        fit_antibody or fit_all_antibodies has been called, it will also remove 
+        the mixture model fits for that antibody.
+
+        Args:
+            antibody (str): name of antibody to be removed
+
+        Raises:
+            AntibodyLookupError: The antibody is not found in the protein data
+            AntibodyLookupError: The provided antibody is not a string
+        """
+        # CHECK: Does this antibody exist in the protein data?
+        if isinstance(antibody, str):
+            try:
+                # Drop column from protein data
+                self._protein_matrix.drop(antibody, axis=1, inplace=True)
+                print(f"Removed {antibody} from protein data.")
+            except:
+                raise AntibodyLookupError(f"'{antibody}' not found in protein data.")
+        else:
+            raise AntibodyLookupError("Antibody must be a string")
+
+        # CHECK: Does this antibody have a fit?
+        if self._all_fits_dict != None and antibody in self._all_fits_dict:
+            self._all_fits_dict.pop(antibody)
+            print(f"Removed {antibody} fits.")
+    
+    def fit_antibody(self,
+                     input: list | str,
+                     ab_name: str = None,
+                     transform_type: str = None,
+                     transform_scale: int = 1,
+                     model: str = 'gaussian',
+                     plot: bool = False,
+                     **kwargs) -> dict:
+        """Fits a mixture model to an antibody and returns its optimal parameters.
+
+        This function can be called to either initially fit a single antibody
+        with a mixture model or replace an existing fit. This function can be called
+        after fit_all_antibodies has been called to replace individual fits.
+
+        Args:
+            input (list | str): raw values from protein data or antibody name 
+            ab_name (str, optional): name of antibody. Ignore if calling 
+                fit_antibody by supplying the antibody name in the "input" parameter.
+            transform_type (str): type of transformation. "log" or "arcsinh"
+            transform_scale (int): multiplier applied during transformation
+            model (str): type of model to fit. "gaussian" or "nb"
+            plot (bool): option to plot each model
+            **kwargs: initial arguments for sklearn's GaussianMixture (optional)
+
+        Raises:
+            InvalidModelError: The provided model is neither "gaussian" nor "nb".
+            ExtraArgumentsError: Additional kwargs can only be provided for "gaussian".
+            TransformTypeError: The transform type is neither "log" nor "arcsinh".
+            PlotAntibodyFitError: Plot must be a boolean value.
+            AntibodyLookupError: The provided antibody name is not found in the protein data.
+            TransformTypeError: A transform scale cannot be provided without a transform type.
+
+        Returns:
+            dict: results from optimization as either gauss_params/nb_params.
+        """
+
+        # Checking parameters
+        if model != 'nb' and model != 'gaussian':
+            raise InvalidModelError(("Invalid model. Please choose 'gaussian' or 'nb'. "
+                                    "Default: 'gaussian'."))
+
+        if model == 'nb' and len(kwargs) > 0:
+            raise ExtraArgumentsError("additional kwargs can only be used for 'gaussian'.")
+
+        if transform_scale != 1 and transform_type is None:
+            raise TransformTypeError("transform_type must be chosen to use "
+                                  "transform_scale. choose 'log' or 'arcsinh'.")
+
+        # if isinstance(transform_scale, int) == False:
+        #     raise TransformScaleError("'transform_scale' must be an integer value.")
+
+        if isinstance(plot, bool) == False:
+            raise PlotAntibodyFitError("'plot' must be a boolean value.")
+
+        # Check if all_fits_dict exists
+        if self._all_fits_dict is None:
+            self._all_fits_dict = {}
+            for ab in list(self._protein_matrix.columns):
+                self._all_fits_dict[ab] = None
+
+        # Indicate whether this function call is for individual fitting
+        individual = False
+
+        # Fitting a single antibody using its name
+        if isinstance(input, str):
+            # if input in self._protein_matrix.columns:
+            try:
+                data_vector = list(self._protein_matrix.loc[:, input].values)
+                # Also set ab_name to input, since input is the string of the antibody
+                ab_name = input
+                individual = True
+
+                if transform_type is None:
+                    # If no transform type, reset data back to normal
+                    self.protein.loc[:, ab_name] = self._temp_protein.loc[:, ab_name]
+                    data_vector = list(self._temp_protein.loc[:, ab_name])
+
+            except:
+                raise AntibodyLookupError(f"'{input}' not found in protein data.")
+        # Fitting all antibodies at once
+        else:
+            data_vector = input
+
+        if transform_type is not None:
+            if transform_type == 'log':
+                data_vector = _log_transform(d_vect=data_vector,
+                                            scale=transform_scale)
+                self.protein.loc[:, ab_name] = data_vector
+
+            elif transform_type == 'arcsinh':
+                data_vector = _arcsinh_transform(d_vect=data_vector,
+                                                scale=transform_scale)
+                self.protein.loc[:, ab_name] = data_vector
+
+            else:
+                raise TransformTypeError(("Invalid transformation type. " 
+                                          "Please choose 'log' or 'arcsinh'. "
+                                          "Default: None."))
+
+        if model == 'gaussian':
+            gauss_params = _gmm_results(counts=data_vector,
+                                        ab_name=ab_name,
+                                        plot=plot,
+                                        **kwargs)
+
+            # Check if a params already exists in dict
+            if individual:
+                # Add or replace the existing fit so far
+                self._all_fits_dict[input] = gauss_params
+
+                # Update all of the fits to self._all_fits
+                # while filtering out None (for antibodies without fits yet)
+                self._all_fits = list(filter(None, self._all_fits_dict.values()))
+
+            return gauss_params
+
+        elif model == 'nb':
+            nb_params = _nb_mle_results(counts=data_vector,
+                                        ab_name=ab_name,
+                                        plot=plot)
+
+            if individual:
+                self._all_fits_dict[input] = nb_params
+                self._all_fits = list(filter(None, self._all_fits_dict.values()))
+
+            return nb_params
             
