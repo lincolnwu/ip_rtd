@@ -285,8 +285,7 @@ class ImmunoPhenoData:
         """Convert all cell ontology IDs to a common name.
 
         Requires all values in the "labels" column of the cell labels dataframe to
-        follow the cell ontology format of CL:XXXXXXX or CL_XXXXXXX,
-        where "X" is a numeric value.
+        follow the cell ontology format of CL:0000000 or CL_0000000.
 
         Returns:
             None. Modifies the cell labels dataframe in-place.
@@ -324,14 +323,14 @@ class ImmunoPhenoData:
             raise Exception("No cell labels found. Please provide a table with a 'labels' column.")
 
     def remove_antibody(self, antibody: str) -> None:
-        """Removes an antibody from all protein data and mixture model fits
+        """Removes an antibody from all protein data and mixture model fits.
 
         Removes all values for an antibody from all protein dataframes in-place. If
         fit_antibody or fit_all_antibodies has been called, it will also remove 
         the mixture model fits for that antibody.
 
         Args:
-            antibody (str): name of antibody to be removed
+            antibody (str): name of antibody to be removed.
 
         Returns:
             None. Modifies all protein dataframes and fits data in-place.
@@ -369,11 +368,11 @@ class ImmunoPhenoData:
     def select_mixture_model(self,
                              antibody: str,
                              mixture: int) -> None:
-        """Overrides the best mixture model fit for an antibody
+        """Overrides the best mixture model fit for an antibody.
 
         Args:
-            antibody (str): name of antibody to modify best mixture model fit
-            mixture (int): preferred number of mixture components to override a fit
+            antibody (str): name of antibody to modify best mixture model fit.
+            mixture (int): preferred number of mixture components to override a fit.
 
         Returns:
             None. Modifies mixture model order in-place.
@@ -529,7 +528,7 @@ class ImmunoPhenoData:
                            model: str = 'gaussian',
                            plot: bool = False,
                            **kwargs) -> None:
-        """Fits all antibodies with a Gaussian or Negative Binomial mixture model
+        """Fits all antibodies with a Gaussian or Negative Binomial mixture model.
 
         Fits a Gaussian or Negative Binomial mixture model to all antibodies
         in the protein dataset. After all antibodies are fit, the output will 
@@ -595,7 +594,7 @@ class ImmunoPhenoData:
                                  bg_cell_z_score: int = 10,
                                  cumulative: bool = False) -> None:
         
-        """Normalizes all antibodies in the protein data
+        """Normalizes all antibodies in the protein data.
 
         The normalization step uses the fits from the mixture model to remove 
         background noise from the overall signal expression of an antibody. This will take into
