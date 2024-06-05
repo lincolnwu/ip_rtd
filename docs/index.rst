@@ -28,7 +28,7 @@ Contents
    :maxdepth: 1
    :caption: TUTORIALS
 
-   ../notebooks/titration_example
+   notebooks/titration_example
 
 .. toctree::
    :maxdepth: 2
