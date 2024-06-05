@@ -28,6 +28,7 @@ Contents
    :maxdepth: 2
    :caption: TUTORIALS
 
+   notebooks/Example_1
    notebooks/titration_example.ipynb
 
 .. toctree::

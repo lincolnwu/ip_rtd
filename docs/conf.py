@@ -23,8 +23,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'nbsphinx',
-    "myst_nb"
+    'nbsphinx'
 ]
 
 # Napoleon settings
