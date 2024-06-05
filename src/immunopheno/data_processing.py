@@ -147,7 +147,8 @@ class ImmunoPhenoData:
                 all dataframes of the object. 
 
         Returns:
-            ImmunoPhenoData: contains modified dataframes based on provided rows/cells names
+            ImmunoPhenoData: ImmunoPhenoData object with modified dataframes 
+            based on provided rows/cells names.
         """
         if isinstance(index, list):
             index = pd.Index(index)
@@ -173,7 +174,7 @@ class ImmunoPhenoData:
         columns (proteins/antibodies). 
 
         Returns:
-            pd.DataFrame: dataframe containing protein data.
+            pd.DataFrame: Dataframe containing protein data.
         """
         return self._protein_matrix
 
@@ -189,7 +190,7 @@ class ImmunoPhenoData:
         columns (genes).
 
         Returns:
-            pd.DataFrame: dataframe containing RNA data.
+            pd.DataFrame: Dataframe containing RNA data.
         """
         return self._gene_matrix
 
@@ -205,9 +206,9 @@ class ImmunoPhenoData:
         is the name of the antibody. 
 
         Returns:
-            dict: key-value pairs represent an antibody name with a
+            dict: Key-value pairs represent an antibody name with a
             nested dictionary containing the respective mixture model fits. 
-            Fits are ranked by the lowest AIC.
+            Fits are ranked starting with the lowest AIC.
         """
         return self._all_fits_dict
 
@@ -220,7 +221,7 @@ class ImmunoPhenoData:
         Note that some rows may be missing/filtered out from the normalization step.
 
         Returns:
-            pd.DataFrame: normalized protein counts for each antibody. 
+            pd.DataFrame: Normalized protein counts for each antibody. 
         """
         return self._normalized_counts_df
     
@@ -236,7 +237,7 @@ class ImmunoPhenoData:
         between the existing and new table. 
 
         Returns:
-            pd.DataFrame: dataframe containing two columns: "labels" and "celltypes". 
+            pd.DataFrame: Dataframe containing two columns: "labels" and "celltypes". 
         """
         return self._cell_labels_filt_df
     
@@ -285,7 +286,7 @@ class ImmunoPhenoData:
 
         Requires all values in the "labels" column of the cell labels dataframe to
         follow the cell ontology format of CL:XXXXXXX or CL_XXXXXXX,
-        where an "X" is a numeric value.
+        where "X" is a numeric value.
 
         Returns:
             None. Modifies the cell labels dataframe in-place.
@@ -323,9 +324,9 @@ class ImmunoPhenoData:
             raise Exception("No cell labels found. Please provide a table with a 'labels' column.")
 
     def remove_antibody(self, antibody: str) -> None:
-        """Removes an antibody from the protein data and mixture model fits
+        """Removes an antibody from all protein data and mixture model fits
 
-        Removes all values for an antibody from the protein dataframe in-place. If
+        Removes all values for an antibody from all protein dataframes in-place. If
         fit_antibody or fit_all_antibodies has been called, it will also remove 
         the mixture model fits for that antibody.
 
@@ -333,23 +334,75 @@ class ImmunoPhenoData:
             antibody (str): name of antibody to be removed
 
         Returns:
-            None. Modifies the protein and fits data in-place.
+            None. Modifies all protein dataframes and fits data in-place.
         """
-        # CHECK: Does this antibody exist in the protein data?
-        if isinstance(antibody, str):
-            try:
-                # Drop column from protein data
-                self._protein_matrix.drop(antibody, axis=1, inplace=True)
-                print(f"Removed {antibody} from protein data.")
-            except:
-                raise AntibodyLookupError(f"'{antibody}' not found in protein data.")
-        else:
+        if not isinstance(antibody, str):
             raise AntibodyLookupError("Antibody must be a string")
+        
+        column_found = False
+
+        # Iterate through all attributes of the class
+        for attr_name, attr_value in self.__dict__.items():
+            # Check if the attribute is a DataFrame
+            if isinstance(attr_value, pd.DataFrame):
+                # Try to drop the column if it exists
+                if antibody in attr_value.columns:
+                    attr_value_copy = attr_value.copy()  # Create a copy to avoid SettingWithCopyWarning
+                    attr_value_copy.drop(antibody, axis=1, inplace=True)
+                    setattr(self, attr_name, attr_value_copy)
+                    column_found = True
+
+        if not column_found:
+            raise AntibodyLookupError(f"'{antibody}' not found in protein data.")
+        else:
+            print(f"Removed {antibody} from object.")
+
+        # Reset the regular and normalized UMAPs after removing an antibody from the protein dataset
+        self._raw_umap = None
+        self._norm_umap = None
 
         # CHECK: Does this antibody have a fit?
         if self._all_fits_dict != None and antibody in self._all_fits_dict:
             self._all_fits_dict.pop(antibody)
             print(f"Removed {antibody} fits.")
+    
+    def select_mixture_model(self,
+                             antibody: str,
+                             mixture: int) -> None:
+        """Overrides the best mixture model fit for an antibody
+
+        Args:
+            antibody (str): name of antibody to modify best mixture model fit
+            mixture (int): preferred number of mixture components to override a fit
+
+        Returns:
+            None. Modifies mixture model order in-place.
+        """
+        # CHECK: is mixture between 1 and 3
+        if (not 1 <= mixture <= 3):
+            raise BoundsThresholdError("Number for Mixture Model must lie between 1 and 3 (inclusive).")
+
+        # CHECK: Does this antibody have a fit?
+        if self._all_fits_dict != None and antibody in self._all_fits_dict:
+
+            # Find current ordering of mixture models for this antibody
+            # We know the element at index 0 is by default the "best" (sorted by lowest AIC)
+            mix_order_list = list(self._all_fits_dict[antibody].keys())
+
+            # Find the index of the element we CHOOSE to be the best
+            choice_index = mix_order_list.index(mixture)
+
+            # SWAP the ordering of these two elements in the list
+            mix_order_list[0], mix_order_list[choice_index] = mix_order_list[choice_index], mix_order_list[0]
+
+            # With this new list ordering, re-create the dictionary
+            reordered_dict = {k: self._all_fits_dict[antibody][k] for k in mix_order_list}
+
+            # Re-assign this dictionary to this antibody key
+            self._all_fits_dict[antibody] = reordered_dict
+        else:
+            # Else, we cannot find the antibody's fits
+            raise AntibodyLookupError(f"{antibody} fits cannot be found.")
     
     def fit_antibody(self,
                      input: list | str,
@@ -363,7 +416,7 @@ class ImmunoPhenoData:
 
         This function can be called to either initially fit a single antibody
         with a mixture model or replace an existing fit. This function can be called
-        after fit_all_antibodies has been called to replace individual fits.
+        after fit_all_antibodies has been called to modify individual fits.
 
         Args:
             input (list | str): raw values from protein data or antibody name 
@@ -376,7 +429,7 @@ class ImmunoPhenoData:
             **kwargs: initial arguments for sklearn's GaussianMixture (optional)
 
         Returns:
-            dict: results from optimization as either gauss_params/nb_params.
+            dict: Results from optimization as either gauss_params/nb_params.
         """
 
         # Checking parameters
@@ -469,4 +522,225 @@ class ImmunoPhenoData:
                 self._all_fits = list(filter(None, self._all_fits_dict.values()))
 
             return nb_params
-            
+    
+    def fit_all_antibodies(self,
+                           transform_type: str = None,
+                           transform_scale: int = 1,
+                           model: str = 'gaussian',
+                           plot: bool = False,
+                           **kwargs) -> None:
+        """Fits all antibodies with a Gaussian or Negative Binomial mixture model
+
+        Fits a Gaussian or Negative Binomial mixture model to all antibodies
+        in the protein dataset. After all antibodies are fit, the output will 
+        display the number of each mixture model fit in the dataset. This includes
+        the names of the antibodies that were fit with a single component model.
+        
+        Args:
+            transform_type (str): type of transformation. "log" or "arcsinh"
+            transform_scale (int): multiplier applied during transformation.
+            model (str): type of model to fit. "gaussian" or "nb"
+            plot (bool): option to plot each model
+            **kwargs: initial arguments for sklearn's GaussianMixture (optional)
+        
+        Returns:
+            None. Results will be stored in the class. This is accessible using 
+            the "fits" property.
+        """
+
+        fit_all_results = []
+
+        for ab in tqdm(self._protein_matrix, total=len(self._protein_matrix.columns)):
+            # if plot: # Print antibody name if plotting
+                # print("Antibody:", ab)
+            fits = self.fit_antibody(input=self._protein_matrix.loc[:, ab],
+                                    ab_name=ab,
+                                    transform_type=transform_type,
+                                    transform_scale=transform_scale,
+                                    model=model,
+                                    plot=plot,
+                                    **kwargs)
+            self._all_fits_dict[ab] = fits
+            fit_all_results.append(fits)
+        
+        number_3_component = 0
+        number_2_component = 0
+        all_1_component = []
+
+        for ab_name, fit_results in self._all_fits_dict.items():
+            num_components = next(iter(fit_results))
+            if num_components == 3:
+                number_3_component += 1
+            elif num_components == 2:
+                number_2_component += 1
+            elif num_components == 1:
+                all_1_component.append(ab_name)
+                
+        print("Number of 3 component models:", number_3_component)
+        print("Number of 2 component models:", number_2_component)
+        print("Number of 1 component models:", len(all_1_component))
+
+        if len(all_1_component) > 0:
+            print("Antibodies of 1 component models:")
+            for background_ab in all_1_component:
+                print(background_ab)
+
+        # Store in class
+        self._all_fits = fit_all_results
+
+    def normalize_all_antibodies(self,
+                                 p_threshold: float = 0.05,
+                                 sig_expr_threshold: float = 0.85,
+                                 bg_expr_threshold: float = 0.15,
+                                 bg_cell_z_score: int = 10,
+                                 cumulative: bool = False) -> None:
+        
+        """Normalizes all antibodies in the protein data
+
+        The normalization step uses the fits from the mixture model to remove 
+        background noise from the overall signal expression of an antibody. This will take into
+        account non-specific antibody binding if RNA data is present. If RNA data 
+        is present, the effects of cell size on the background noise will be regressed out
+        for cells not expressing the antibody. Likewise, if cell labels are provided, 
+        the effects of cell types on the background noise for these cells will also be regressed out. 
+        These effects are determined by performing a linear regression using the 
+        total number of mRNA UMI counts as a proxy for cell size.
+
+        Args:
+            p_threshold (float): level of significance for testing the association
+                between cell size/type and background noise from linear regression. If 
+                the p-value is smaller than the threshold, these factors are regressed out.
+            sig_expr_threshold (float): cells with a percentage of expressed proteins above
+                this threshold are filtered out.
+            bg_expr_threshold (float): cells with a percentage of expressed proteins below
+                this threshold are filtered out.
+            bg_cell_z_score (int): The number of standard deviations of average protein expression
+                to separate cells that express an antibody from cells that do not express an antibody.
+                A larger value will result in more discrete clusters in the normalized 
+                protein expression space.
+            cumulative (bool): flag to indicate whether to return the 
+                cumulative distribution probabilities.
+        
+        Returns:
+            None. Results will be stored in the class. This is accessible using 
+            the "normalized_counts" property.
+        """
+
+        # Check if parameters have changed
+        if (p_threshold, sig_expr_threshold, 
+            bg_expr_threshold, bg_cell_z_score, cumulative) != self._last_normalize_params:
+            # If so, reset UMAP stored in class
+            self._norm_umap = None
+            # Update the parameters
+            self._last_normalized_params = (p_threshold, sig_expr_threshold, 
+                                            bg_expr_threshold, bg_cell_z_score, cumulative)
+        
+        bg_cell_z_score = -bg_cell_z_score
+        if self._all_fits is None:
+            raise EmptyAntibodyFitsError("No fits found for each antibody. Please "
+                                         "call fit_all_antibodies() or fit_antibody() first.")
+
+        if None in self._all_fits_dict.values():
+            raise IncompleteAntibodyFitsError("All antibodies must be fit before normalizing. "
+                                              "call fit_all_antibodies() or fit_antibody() for "
+                                              "each antibody.")
+
+        all_fits = self._all_fits_dict
+
+        if (not 0 <= p_threshold <= 1 or
+            not 0 <= sig_expr_threshold <= 1 or
+            not 0 <= bg_expr_threshold <= 1):
+            raise BoundsThresholdError("threshold must lie between 0 and 1 (inclusive)")
+
+        # if not bg_cell_z_score < 0:
+        #     raise BackgroundZScoreError("bg_cell_z_score must be less than 0")
+
+        warnings.filterwarnings('ignore')
+        # Classify all cells as either background or signal
+        classified_cells = _classify_cells_df(all_fits, self._protein_matrix)
+
+        # Filter out cells that have a high signal: background ratio (default: 1.0)
+        classified_cells_filt = _filter_classified_df(classified_cells,
+                                                    sig_threshold=sig_expr_threshold,
+                                                    bg_threshold=bg_expr_threshold)
+        self._classified_filt_df = classified_cells_filt
+
+        # Filter the same cells from the protein data
+        protein_cleaned_filt = _filter_count_df(classified_cells_filt,
+                                                self._protein_matrix)
+
+        # Filter from cell labels if dealing with single cell data
+        if self._cell_labels is not None:
+            cell_labels_filt = _filter_cell_labels(classified_cells_filt,
+                                                        self._cell_labels)
+            self._cell_labels_filt_df = cell_labels_filt # this will replace the norm label field directly
+
+        # Calculate z scores for all values
+        z_scores = _z_scores_df(all_fits, protein_cleaned_filt)
+        self._z_scores_df = z_scores
+
+        # Extract z scores for background cells
+        background_z_scores = _bg_z_scores_df(classified_cells_filt, z_scores)
+
+        # Set cumulative flag
+        self._cumulative = cumulative
+
+        # Set the background cell z score to the class attribute (for STvEA)
+        self._background_cell_z_score = bg_cell_z_score
+
+        # The server currently uses +10 adjustment to all background cells
+        # Calculate the additional adjustment from the user-provided background cell z score
+        # Example: bg_cell_z_score: -10, stvea_correction_value: 0
+        # Example: bg_cell_z_score: -3, stvea_correction_value: 7
+        self._stvea_correction_value = 10 + bg_cell_z_score
+
+        # If dealing with single cell data with cell_labels,
+        # Run linear regression to regress out z scores based on size and cell type
+        if self._gene_matrix is not None and self._cell_labels is not None:
+            df_by_type = _z_avg_umi_sum_by_type(background_z_scores,
+                                                self._gene_matrix,
+                                                cell_labels_filt)
+
+            lin_reg_type = _linear_reg_by_type(df_by_type)
+            self._linear_reg_df = lin_reg_type
+
+            # Normalize all protein values
+            normalized_df = _normalize_antibodies_df(
+                                    protein_cleaned_filt_df=protein_cleaned_filt,
+                                    fit_all_results=all_fits,
+                                    p_threshold=p_threshold,
+                                    background_cell_z_score=bg_cell_z_score,
+                                    classified_filt_df=classified_cells_filt,
+                                    cell_labels_filt_df=cell_labels_filt,
+                                    lin_reg_dict=lin_reg_type,
+                                    cumulative=cumulative)
+
+        # If dealing with single cell data WITHOUT cell labels:
+        # Run linear regression to regress out only size
+        elif self._gene_matrix is not None and self._cell_labels is None:
+            z_umi = _z_avg_umi_sum(background_z_scores, self._gene_matrix)
+            lin_reg = _linear_reg(z_umi)
+            self._linear_reg_df = lin_reg
+
+            # Normalize all protein values
+            normalized_df = _normalize_antibodies_df(
+                                    protein_cleaned_filt_df=protein_cleaned_filt,
+                                    fit_all_results=all_fits,
+                                    p_threshold=p_threshold,
+                                    background_cell_z_score=bg_cell_z_score,
+                                    classified_filt_df=classified_cells_filt,
+                                    lin_reg=lin_reg,
+                                    cumulative=cumulative)
+
+        # Else, normalize values for flow cytometry data
+        else:
+            # Normalize all values in the protein matrix
+            normalized_df = _normalize_antibodies_df(
+                                    protein_cleaned_filt_df=protein_cleaned_filt,
+                                    fit_all_results=all_fits,
+                                    p_threshold=p_threshold,
+                                    background_cell_z_score=bg_cell_z_score,
+                                    classified_filt_df=classified_cells_filt,
+                                    cumulative=cumulative)
+        
+        self._normalized_counts_df = normalized_df
