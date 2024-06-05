@@ -24,7 +24,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'nbsphinx',
-    "myst_parser",
     "myst_nb"
 ]
 
