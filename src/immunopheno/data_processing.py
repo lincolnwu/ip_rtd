@@ -12,7 +12,22 @@ class ImmunoPhenoData:
     
     Performs fitting of gaussian/negative binomial mixture models and
     normalization to antibodies present in a protein dataset. Requires protein
-    data to be supplied using the protein_matrix or scanpy field. 
+    data to be supplied using the protein_matrix or scanpy field.
+
+    Args:
+        protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count/protein matrix. 
+            Format: Row (cells) x column (antibodies/proteins).
+        gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix.
+            Format: Row (cells) x column (genes).
+        cell_labels (str | pd.DataFrame): file path or dataframe to cell type labels. 
+            Format: Row (cells) x column (cell type such as Cell Ontology ID). Must contain 
+            a column called "labels".
+        spreadsheet (str): name of csv file containing a spreadsheet with
+            information about the experiment and antibodies. Used for uploading data to a database.
+        scanpy (anndata.AnnData): scanpy AnnData object used to load in protein and gene data.
+        scanpy_labels (str): location of cell labels inside a scanpy object. 
+            Format: scanpy is an AnnData object containing an 'obs' field
+                Ex: AnnData.obs['scanpy_labels']
     """
 
     def __init__(self,
@@ -22,23 +37,6 @@ class ImmunoPhenoData:
                  spreadsheet: str = None,
                  scanpy: anndata.AnnData = None,
                  scanpy_labels: str = None):
-        """Initializes the instance to contain either single cell or cytometry data.
-        
-        Args:
-            protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count/protein matrix. 
-                Format: Row (cells) x column (antibodies/proteins).
-            gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix.
-                Format: Row (cells) x column (genes).
-            cell_labels (str | pd.DataFrame): file path or dataframe to cell type labels. 
-                Format: Row (cells) x column (cell type such as Cell Ontology ID). Must contain 
-                a column called "labels".
-            spreadsheet (str): name of csv file containing a spreadsheet with
-                information about the experiment and antibodies. Used for uploading data to a database.
-            scanpy (anndata.AnnData): scanpy AnnData object used to load in protein and gene data.
-            scanpy_labels (str): location of cell labels inside a scanpy object. 
-                Format: scanpy is an AnnData object containing an 'obs' field
-                    Ex: AnnData.obs['scanpy_labels']
-        """
 
         # Raw values
         self._protein_matrix = protein_matrix
