@@ -28,8 +28,8 @@ Contents
    :maxdepth: 1
    :caption: TUTORIALS
 
-   ../notebooks/Example_1
-   ../notebooks/titration_example.ipynb
+   notebooks/Example_1
+   notebooks/titration_example.ipynb
 
 .. toctree::
    :maxdepth: 2

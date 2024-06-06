@@ -11,7 +11,8 @@ class ImmunoPhenoData:
     """A class to hold single-cell data (CITE-Seq, etc) and cytometry data.
     
     Performs fitting of gaussian/negative binomial mixture models and
-    normalization to antibodies present in a protein dataset. 
+    normalization to antibodies present in a protein dataset. Requires protein
+    data to be supplied using the protein_matrix or scanpy field. 
 
     Args:
         protein_matrix (str | pd.Dataframe): file path or dataframe to ADT count matrix. 
@@ -19,8 +20,8 @@ class ImmunoPhenoData:
         gene_matrix (str | pd.DataFrame): file path or dataframe to UMI count matrix.
             Format: Row (cells) x column (genes).
         cell_labels (str | pd.DataFrame): file path or dataframe to cell type labels. 
-            Format: Row (cells) x column (cell type such as Cell Ontology ID). The column
-            name should be called "labels". 
+            Format: Row (cells) x column (cell type such as Cell Ontology ID). Must contain 
+            a column called "labels".
         spreadsheet (str): name of csv file containing a spreadsheet with
             information about the experiment and antibodies. Used for uploading data to a database.
         scanpy (anndata.AnnData): scanpy AnnData object used to load in protein and gene data.
@@ -264,22 +265,6 @@ class ImmunoPhenoData:
                 print(f"An error occurred during the update: {e}")
         else:
             print("No common rows found between old and new labels. No updates will be made to the old labels.")
-
-    def reset_index(self, arg1: int | float = None, arg2: int | float = None):
-        """Resets the index for dataframes and adds/subtracts a value.
-
-        Resets the index and then adds a value if needed. The value for "arg1"
-        will be added, while the value for "arg2" will be subtracted.
-
-        Args:
-            arg1 (int | float): the first number who can have a second
-                line if it needed it
-            arg2 (int | float): the second number
-
-        Returns:
-            None. Modifies the protein dataset in-place.
-        """
-        self._protein_matrix = self._temp_protein + arg1 - arg2
 
     def convert_labels(self) -> None:
         """Convert all cell ontology IDs to a common name.
