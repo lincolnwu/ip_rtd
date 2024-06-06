@@ -418,14 +418,14 @@ class ImmunoPhenoData:
         after fit_all_antibodies has been called to modify individual fits.
 
         Args:
-            input (list | str): raw values from protein data or antibody name 
-            ab_name (str, optional): name of antibody. Ignore if calling 
+            input (list | str): raw values from protein data or antibody name.
+            ab_name (str, optional): name of antibody. Ignore if calling
                 fit_antibody by supplying the antibody name in the "input" parameter.
-            transform_type (str): type of transformation. "log" or "arcsinh"
-            transform_scale (int): multiplier applied during transformation
-            model (str): type of model to fit. "gaussian" or "nb"
-            plot (bool): option to plot each model
-            **kwargs: initial arguments for sklearn's GaussianMixture (optional)
+            transform_type (str): type of transformation. "log" or "arcsinh".
+            transform_scale (int): multiplier applied during transformation.
+            model (str): type of model to fit. "gaussian" or "nb".
+            plot (bool): option to plot each model.
+            **kwargs: initial arguments for sklearn's GaussianMixture (optional).
 
         Returns:
             dict: Results from optimization as either gauss_params/nb_params.
@@ -536,11 +536,11 @@ class ImmunoPhenoData:
         the names of the antibodies that were fit with a single component model.
         
         Args:
-            transform_type (str): type of transformation. "log" or "arcsinh"
+            transform_type (str): type of transformation. "log" or "arcsinh".
             transform_scale (int): multiplier applied during transformation.
-            model (str): type of model to fit. "gaussian" or "nb"
-            plot (bool): option to plot each model
-            **kwargs: initial arguments for sklearn's GaussianMixture (optional)
+            model (str): type of model to fit. "gaussian" or "nb".
+            plot (bool): option to plot each model.
+            **kwargs: initial arguments for sklearn's GaussianMixture (optional).
         
         Returns:
             None. Results will be stored in the class. This is accessible using 

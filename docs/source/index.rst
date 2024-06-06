@@ -25,11 +25,11 @@ Contents
    what-is-immunopheno
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: TUTORIALS
 
-   notebooks/Example_1
-   notebooks/titration_example.ipynb
+   ../notebooks/Example_1
+   ../notebooks/titration_example.ipynb
 
 .. toctree::
    :maxdepth: 2
