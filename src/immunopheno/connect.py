@@ -137,7 +137,7 @@ class ImmunoPhenoDB_Connect:
 
         Returns:
             go.Figure: Graph containing cell ontologies as nodes. This plotly figure 
-                can be further updated or styled.
+            can be further updated or styled.
         """
         if root is None:
             # We already calculated the database's subgraph in self._subgraph
@@ -199,7 +199,6 @@ class ImmunoPhenoDB_Connect:
                         background_id_CLs: list = None,
                         idBTO: list = None, 
                         idExperiment: list = None)-> tuple:
-        
         """Queries the database to find antibodies that mark a provided list of cell populations.
 
         This function contains two parameters to accept a list of cell populations in the form of cell ontology IDs.
@@ -517,8 +516,8 @@ class ImmunoPhenoDB_Connect:
                   c_transfer_matrix: float = 0.5,
                   mask_threshold: float = 0.75,
                   mask: bool = True,
-                  num_chunks=1,
-                  num_cores=1):
+                  num_chunks: int = 1,
+                  num_cores: int = 1):
         """Automatically transfers single cell annotations to cytometry data
 
         Uses reference data stored in the ImmunoPhenoDB database to annotate cells
