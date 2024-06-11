@@ -1,5 +1,5 @@
 Connect class
-=====
+=============
 
 .. _installation:
 
