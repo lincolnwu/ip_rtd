@@ -1,19 +1,12 @@
-Welcome to Lumache's documentation!
-===================================
+ImmunoPheno: a data-driven platform for the design and analysis of immunophenotyping experiments
+================================================================================================
 
-**Lumache** (/lu'make/) is a Python library for cooks and food lovers
-that creates recipes mixing random ingredients.
-It pulls data from the `Open Food Facts database <https://world.openfoodfacts.org/>`_
-and offers a *simple* and *intuitive* API.
-
-Lumache hosts its documentation on Read the Docs.
-
-Check out the :doc:`usage` section for further information, including
-how to :ref:`installation` the project.
-
-.. note::
-
-   This project is under active development.
+ImmunoPheno is a data-driven bioinformatics platform designed to enhance the design and analysis of 
+immunophenotyping experiments. This platform aims to overcome the limitations of current cytometry
+techniques to allow researchers to more accurately and efficiently identify and annotate
+cell populations in multiplexed antibody-based cytometry data. By leveraging single-cell
+atlases technologies such as CITE-Seq, ImmunoPheno can improve the phenotypic resolution,
+accuracy, and reproducibility of cell annotations in experiments.
 
 Contents
 --------

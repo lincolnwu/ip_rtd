@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 from netgraph import Graph
 
 from sklearn.impute import KNNImputer
-from .stvea_controller import Controller
+# from .stvea_controller import Controller
 import math
 import scipy
 import copy
