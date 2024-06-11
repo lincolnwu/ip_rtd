@@ -29,5 +29,6 @@ Contents
    :caption: API
 
    usage
-   api
    connect
+   api
+   

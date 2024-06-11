@@ -1,5 +1,5 @@
-Usage
-=====
+Normalizing CITE-Seq Data
+=========================
 
 .. _installation:
 
@@ -10,15 +10,12 @@ To use ImmunoPheno, first install it using pip:
 
 .. code-block:: console
 
-   (.venv) $ pip install immunopheno
+   (.venv) $ !pip install git+https://github.com/CamaraLab/ImmunoPheno.git@package-dev --q
 
-Creating recipes
-----------------
+ImmunoPhenoData
+---------------
 
-Testing class functions
+This class holds all single cell or cytometry data for analysis.
 
 .. autoclass:: immunopheno.data_processing.ImmunoPhenoData
-    :members:
-
-.. autoclass:: immunopheno.connect.ImmunoPhenoDB_Connect
     :members:

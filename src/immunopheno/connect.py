@@ -120,7 +120,7 @@ class ImmunoPhenoDB_Connect:
         return node_fam_dict
     
     def plot_db_graph(self, 
-                      root: str = None) -> go.Figure():
+                      root: str = None) -> go.Figure:
         """Plots a graph of all cell type ontologies in the database
 
         The graph will start with the root node of "CL:0000000" representing "cell".
@@ -136,7 +136,7 @@ class ImmunoPhenoDB_Connect:
                 that modified root node. 
 
         Returns:
-            go.Figure(): Graph containing cell ontologies as nodes. This plotly figure 
+            go.Figure: Graph containing cell ontologies as nodes. This plotly figure 
                 can be further updated or styled.
         """
         if root is None:

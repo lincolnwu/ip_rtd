@@ -1,21 +1,10 @@
-Connect class
-=============
+Connecting to Database
+======================
 
-.. _installation:
+ImmunoPhenoDB_Connect
+---------------------
 
-Installation
-------------
-
-To use ImmunoPheno, first install it using pip:
-
-.. code-block:: console
-
-   (.venv) $ pip install immunopheno
-
-Creating recipes
-----------------
-
-Testing class functions
+This class connects to the database containing the reference dataset.
 
 .. autoclass:: immunopheno.connect.ImmunoPhenoDB_Connect
     :members:
