@@ -37,3 +37,4 @@ Contents
 
    usage
    api
+   connect
