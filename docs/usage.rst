@@ -19,3 +19,6 @@ Testing class functions
 
 .. autoclass:: immunopheno.data_processing.ImmunoPhenoData
     :members:
+
+.. autoclass:: immunopheno.connect.ImmunoPhenoDB_Connect
+    :members:
