@@ -1,6 +1,19 @@
-Connect
-===
-Does this create a new page?
+Connect class
+=====
+
+.. _installation:
+
+Installation
+------------
+
+To use ImmunoPheno, first install it using pip:
+
+.. code-block:: console
+
+   (.venv) $ pip install immunopheno
+
+Creating recipes
+----------------
 
 Testing class functions
 
