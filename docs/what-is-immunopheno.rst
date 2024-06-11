@@ -1,4 +1,4 @@
 What is ImmunoPheno?
 ====================
 
-Description
+ImmunoPheno is a data-driven bioinformatics platform that 
